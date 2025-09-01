@@ -24,8 +24,30 @@ namespace eCommerce.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Map ViewModel to Member model tracked by DB
-                Member newMember = new()
+                // Check if username or email is already taken
+                bool usernameTaken = await _context.Members
+                                    .AnyAsync(m => m.Username == reg.Username);
+
+                if (usernameTaken)
+                {
+                    ModelState.AddModelError(nameof(Member.Username), "Username already taken");
+                }
+
+                bool emailTaken = await _context.Members
+                                .AnyAsync(m => m.Email == reg.Email);
+
+                if (emailTaken)
+                {
+                    ModelState.AddModelError(nameof(Member.Email), "Email already taken");
+                }
+
+                if (usernameTaken || emailTaken)
+                {
+                    return View(reg);
+                }
+
+                    // Map ViewModel to Member model tracked by DB
+                    Member newMember = new()
                 {
                     Username = reg.Username,
                     Email = reg.Email,
@@ -53,9 +75,10 @@ namespace eCommerce.Controllers
             if (ModelState.IsValid)
             {
                 // Check if UsernameOrEmail and Password matches a record in the database
-                Member? loggedInMember = await _context.Members
+                var loggedInMember = await _context.Members
                                     .Where(m => (m.Username == login.UsernameOrEmail || m.Email == login.UsernameOrEmail)
                                                 && m.Password == login.Password)
+                                    .Select(m => new {m.Username, m.MemberId})
                                     .SingleOrDefaultAsync();
                 if (loggedInMember == null)
                 {
