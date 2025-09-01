@@ -14,8 +14,6 @@ builder.Services.AddDbContext<ProductDbContext>(options =>
 // Required for session state
 builder.Services.AddDistributedMemoryCache();
 
-var app = builder.Build();
-
 // Configure session state options
 builder.Services.AddSession(options =>
 {
@@ -23,6 +21,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
