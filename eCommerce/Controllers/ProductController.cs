@@ -14,10 +14,35 @@ public class ProductController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1)
     {
-        List<Product> AllProducts = await _context.Products.ToListAsync();
-        return View(AllProducts);
+        int productsPerPage = 3; // configurable page size
+
+        int totalProducts = await _context.Products.CountAsync();
+        int totalPagesNeeded = (int)Math.Ceiling(totalProducts / (double)productsPerPage);
+        
+        if (page < 1) page = 1;
+
+        // If user tries to navigate beyond last page, send them to the last page
+        if (totalPagesNeeded > 0 && page > totalPagesNeeded) 
+            page = totalPagesNeeded;
+
+        List<Product> products = await _context.Products
+            .OrderBy(p => p.Title)
+            .Skip((page - 1) * productsPerPage)
+            .Take(productsPerPage)
+            .ToListAsync();
+
+        ProductListViewModel productListViewModel = new()
+        {
+            Products = products,
+            CurrentPage = page,
+            TotalPages = totalPagesNeeded,
+            ProductsPerPage = productsPerPage,
+            TotalProducts = totalProducts
+        };
+
+        return View(productListViewModel);
     }
 
     [HttpGet]
