@@ -1,0 +1,39 @@
+﻿@model LoginViewModel
+@{
+	ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center">
+	<div class="col-md-6 col-lg-5">
+		<h2>Log in to the website</h2>
+		
+		<div class="card">
+			<div class="card-body">
+				<form method="post">
+					<div class="text-danger" asp-validation-summary="All"></div>
+					<div class="mb-3">
+						<label asp-for="UsernameOrEmail" class="form-label"></label>
+						<input asp-for="UsernameOrEmail" class="form-control" placeholder="Username Or Email" />
+						<span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
+					</div>
+					
+					<div class="mb-3">
+						<label asp-for="Password" class="form-label"></label>
+						<input asp-for="Password" class="form-control" />
+						<span asp-validation-for="Password" class="text-danger"></span>
+					</div>
+
+					<div class="d-grid">
+						<input type="submit" value="Login" class="btn btn-primary" />
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}
