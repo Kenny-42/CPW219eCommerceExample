@@ -14,20 +14,36 @@ public class ProductController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? searchTerm, decimal? minPrice, decimal? maxPrice, int page = 1)
     {
         int productsPerPage = 3; // configurable page size
 
-        int totalProducts = await _context.Products.CountAsync();
-        int totalPagesNeeded = (int)Math.Ceiling(totalProducts / (double)productsPerPage);
-        
-        if (page < 1) page = 1;
+        // Start creating query, doesn't run yet
+        IQueryable<Product> query = _context.Products.AsQueryable();
 
-        // If user tries to navigate beyond last page, send them to the last page
-        if (totalPagesNeeded > 0 && page > totalPagesNeeded) 
+        // Apply filters
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            string term = searchTerm.Trim();
+            query = query.Where(p => p.Title.Contains(term));
+        }
+        if (minPrice.HasValue)
+        {
+            query = query.Where(p => p.Price >= minPrice.Value);
+        }
+        if (maxPrice.HasValue)
+        {
+            query = query.Where(p => p.Price <= maxPrice.Value);
+        }
+
+        int totalProducts = await query.CountAsync();
+        int totalPagesNeeded = (int)Math.Ceiling(totalProducts / (double)productsPerPage);
+        if (page < 1) 
+            page = 1;
+        if (totalPagesNeeded > 0 && page > totalPagesNeeded)
             page = totalPagesNeeded;
 
-        List<Product> products = await _context.Products
+        List<Product> products = await query
             .OrderBy(p => p.Title)
             .Skip((page - 1) * productsPerPage)
             .Take(productsPerPage)
@@ -39,7 +55,10 @@ public class ProductController : Controller
             CurrentPage = page,
             TotalPages = totalPagesNeeded,
             ProductsPerPage = productsPerPage,
-            TotalProducts = totalProducts
+            TotalProducts = totalProducts,
+            SearchTerm = searchTerm,
+            MinPrice = minPrice,
+            MaxPrice = maxPrice
         };
 
         return View(productListViewModel);
