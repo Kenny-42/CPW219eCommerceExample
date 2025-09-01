@@ -14,8 +14,11 @@ public class Member
 
     /// <summary>
     /// Public facing username for the member.
-    /// Alphanumberic characters only
+    /// Alphanumberic characters only up to 25 characters.
     /// </summary>
+    [RegularExpression("^[a-zA-Z0-9]*$", 
+        ErrorMessage = "Username must be alphanumberic only.")]
+    [StringLength(25)]
     public required string Username { get; set; }
 
     /// <summary>
@@ -26,6 +29,8 @@ public class Member
     /// <summary>
     /// The member's password
     /// </summary>
+    [StringLength(50, MinimumLength = 6, 
+        ErrorMessage = "Your password must be between 6 and 50 characters")]
     public required string Password { get; set; }
 
     /// <summary>
